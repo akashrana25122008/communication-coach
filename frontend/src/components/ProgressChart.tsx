@@ -11,11 +11,13 @@ import {
 import type { ProgressPoint } from '../types'
 
 const series = [
-  { key: 'clarity', label: 'Clarity', color: '#5b5bd6' },
-  { key: 'fluency', label: 'Fluency', color: '#2e9e63' },
-  { key: 'structure', label: 'Structure', color: '#d98a1f' },
-  { key: 'conciseness', label: 'Conciseness', color: '#d14b4b' },
+  { key: 'clarity', label: 'Clarity', color: '#7c5cff' },
+  { key: 'fluency', label: 'Fluency', color: '#4c7cff' },
+  { key: 'structure', label: 'Structure', color: '#e5a54d' },
+  { key: 'conciseness', label: 'Conciseness', color: '#3dbe7a' },
 ] as const
+
+const axisTick = { fontSize: 12, fill: '#9aa0b0' }
 
 interface ProgressChartProps {
   data: ProgressPoint[]
@@ -29,34 +31,38 @@ export function ProgressChart({ data }: ProgressChartProps) {
           data={data}
           margin={{ top: 8, right: 8, bottom: 8, left: -12 }}
         >
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e6e8ef" />
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.06)" />
           <XAxis
             dataKey="label"
             tickLine={false}
             axisLine={false}
-            tick={{ fontSize: 12, fill: '#8b92a0' }}
+            tick={axisTick}
           />
           <YAxis
             domain={[40, 100]}
             tickLine={false}
             axisLine={false}
             width={40}
-            tick={{ fontSize: 12, fill: '#8b92a0' }}
+            tick={axisTick}
           />
           <Tooltip
             contentStyle={{
               borderRadius: 8,
-              border: '1px solid #e6e8ef',
-              boxShadow: '0 8px 30px rgba(23,26,35,0.12)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: '#101018',
+              boxShadow: '0 12px 36px rgba(0,0,0,0.5)',
               fontSize: 12,
+              color: '#e8e9f0',
             }}
+            labelStyle={{ color: '#9aa0b0', marginBottom: 4 }}
+            itemStyle={{ padding: 0, margin: 0 }}
           />
           <Legend
             verticalAlign="top"
             align="right"
             iconType="circle"
             iconSize={8}
-            wrapperStyle={{ fontSize: 12, color: '#5b6270' }}
+            wrapperStyle={{ fontSize: 12, color: '#9aa0b0' }}
           />
           {series.map((s) => (
             <Line

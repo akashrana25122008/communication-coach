@@ -28,7 +28,7 @@ export function PracticeShell({ title, description, backTo }: PracticeShellProps
         }
       />
 
-      <Card className="flex flex-col items-center gap-6 p-8 text-center">
+      <Card className="relative flex flex-col items-center gap-6 overflow-hidden p-8 text-center">
         <p className="text-sm text-text-muted">
           Demo UI — voice and analysis features are coming in a later milestone.
         </p>
@@ -36,18 +36,30 @@ export function PracticeShell({ title, description, backTo }: PracticeShellProps
         <button
           type="button"
           onClick={() => setRecording((r) => !r)}
-          className={`group flex h-16 w-16 items-center justify-center rounded-full transition-all duration-200 focus-visible:shadow-ring ${
+          className={`group relative flex h-16 w-16 items-center justify-center rounded-full transition-colors duration-200 focus-visible:shadow-ring ${
             recording
-              ? 'bg-danger text-white animate-pulse'
+              ? 'bg-danger-strong text-white'
               : 'bg-accent text-accent-ink hover:bg-accent-strong'
           }`}
           aria-label={recording ? 'Stop recording' : 'Start recording'}
         >
+          {recording && (
+            <span
+              className="absolute inset-0 -z-10 animate-ping rounded-full bg-danger/40"
+              aria-hidden="true"
+            />
+          )}
           <Mic className="h-6 w-6" />
         </button>
 
-        <p className="text-sm text-text-muted">
-          {recording ? 'Recording… click the button to stop.' : 'Press to start speaking'}
+        <p className="inline-flex items-center gap-2 text-sm text-text-muted">
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              recording ? 'animate-pulse bg-danger' : 'bg-accent'
+            }`}
+            aria-hidden="true"
+          />
+          {recording ? 'Recording… click the button to stop.' : 'Ready — press to start speaking'}
         </p>
       </Card>
 

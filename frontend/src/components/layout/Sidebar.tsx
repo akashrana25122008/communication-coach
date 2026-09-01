@@ -44,13 +44,22 @@ function NavLinkItem({ item, onClose }: { item: NavItem; onClose: () => void }) 
          transition-colors duration-200 focus-visible:shadow-ring
          ${
            isActive
-             ? 'bg-accent-soft text-accent'
+             ? 'bg-accent-soft text-text hover:bg-accent-soft'
              : 'text-text-muted hover:bg-surface-subtle hover:text-text'
          }`
       }
     >
-      <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
-      <span>{item.label}</span>
+      {({ isActive }) => (
+        <>
+          <Icon
+            className={`h-5 w-5 shrink-0 transition-colors duration-200 ${
+              isActive ? 'text-accent' : 'text-text-faint group-hover:text-text-muted'
+            }`}
+            aria-hidden="true"
+          />
+          <span>{item.label}</span>
+        </>
+      )}
     </NavLink>
   )
 }
@@ -60,7 +69,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
     <>
       {/* Mobile overlay */}
       <div
-        className={`fixed inset-0 z-40 bg-black/30 transition-opacity duration-300 lg:hidden
+        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 lg:hidden
           ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={onClose}
         aria-hidden="true"
@@ -74,7 +83,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       >
         <div className="flex h-16 items-center justify-between border-b border-border px-5">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-ink" aria-hidden="true">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-accent-ink shadow-glow" aria-hidden="true">
               <span className="font-semibold">CC</span>
             </span>
             <span className="text-sm font-semibold tracking-tight text-text">

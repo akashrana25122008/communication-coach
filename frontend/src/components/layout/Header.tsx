@@ -7,7 +7,7 @@ interface HeaderProps {
 
 export function Header({ onMenuClick, userName }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-surface/90 px-4 backdrop-blur-sm sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-surface/70 px-4 backdrop-blur-md sm:px-6 lg:px-8">
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -30,7 +30,7 @@ export function Header({ onMenuClick, userName }: HeaderProps) {
           aria-label="Notifications"
         >
           <Bell className="h-5 w-5" aria-hidden="true" />
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-accent ring-2 ring-surface" aria-hidden="true" />
         </button>
         <a
           href="/settings"

@@ -9,33 +9,36 @@
 
 :root {
   /* Background / surface */
-  --color-bg: #f6f7fb;
-  --color-surface: #ffffff;
-  --color-surface-subtle: #f1f2f7;
-  --color-sidebar: #ffffff;
+  --color-bg: #050507;
+  --color-surface: #0b0b10;
+  --color-surface-subtle: #101018;
+  --color-surface-elevated: #14141d;
+  --color-sidebar: #09090d;
 
   /* Text */
-  --color-text: #171a23;
-  --color-text-muted: #5b6270;
-  --color-text-faint: #8b92a0;
+  --color-text: #e8e9f0;
+  --color-text-muted: #9aa0b0;
+  --color-text-faint: #6b7180;
 
   /* Border */
-  --color-border: #e6e8ef;
-  --color-border-strong: #d6d9e2;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
 
   /* Accent (brand) */
-  --color-accent: #5b5bd6;
-  --color-accent-strong: #4545c4;
-  --color-accent-soft: #ececfc;
-  --color-accent-ink: #ffffff;
+  --color-accent: #7c5cff;
+  --color-accent-strong: #8f72ff;
+  --color-accent-2: #4c7cff;
+  --color-accent-soft: rgba(124, 92, 255, 0.14);
+  --color-accent-ink: #0b0b10;
 
   /* Semantic */
-  --color-success: #2e9e63;
-  --color-success-soft: #e6f5ec;
-  --color-warning: #d98a1f;
-  --color-warning-soft: #fdf3e2;
-  --color-danger: #d14b4b;
-  --color-danger-soft: #fbe9e9;
+  --color-success: #3dbe7a;
+  --color-success-soft: rgba(61, 190, 122, 0.14);
+  --color-warning: #e5a54d;
+  --color-warning-soft: rgba(229, 165, 77, 0.14);
+  --color-danger: #f26d6d;
+  --color-danger-strong: #c94f4f;
+  --color-danger-soft: rgba(242, 109, 109, 0.14);
 
   /* Radius scale */
   --radius-sm: 8px;
@@ -44,9 +47,13 @@
   --radius-xl: 22px;
 
   /* Shadow scale */
-  --shadow-card: 0 1px 2px rgba(23, 26, 35, 0.04), 0 2px 8px rgba(23, 26, 35, 0.05);
-  --shadow-pop: 0 8px 30px rgba(23, 26, 35, 0.12);
-  --shadow-ring: 0 0 0 4px rgba(91, 91, 214, 0.18);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 12px 36px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 0 1px rgba(124, 92, 255, 0.22), 0 8px 28px rgba(124, 92, 255, 0.14);
+  --shadow-ring: 0 0 0 3px rgba(124, 92, 255, 0.45);
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -69,6 +76,7 @@
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);
   --color-surface-subtle: var(--color-surface-subtle);
+  --color-surface-elevated: var(--color-surface-elevated);
   --color-sidebar: var(--color-sidebar);
 
   --color-text: var(--color-text);
@@ -80,6 +88,7 @@
 
   --color-accent: var(--color-accent);
   --color-accent-strong: var(--color-accent-strong);
+  --color-accent-2: var(--color-accent-2);
   --color-accent-soft: var(--color-accent-soft);
   --color-accent-ink: var(--color-accent-ink);
 
@@ -88,6 +97,7 @@
   --color-warning: var(--color-warning);
   --color-warning-soft: var(--color-warning-soft);
   --color-danger: var(--color-danger);
+  --color-danger-strong: var(--color-danger-strong);
   --color-danger-soft: var(--color-danger-soft);
 
   --radius-sm: var(--radius-sm);
@@ -97,6 +107,7 @@
 
   --shadow-card: var(--shadow-card);
   --shadow-pop: var(--shadow-pop);
+  --shadow-glow: var(--shadow-glow);
   --shadow-ring: var(--shadow-ring);
 
   --font-sans: var(--font-sans);
@@ -120,9 +131,19 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(1100px 700px at 15% -5%, rgba(124, 92, 255, 0.09), transparent 60%),
+    radial-gradient(900px 600px at 110% 5%, rgba(76, 124, 255, 0.07), transparent 55%),
+    radial-gradient(1200px 800px at 50% 120%, rgba(124, 92, 255, 0.05), transparent 60%);
+  background-attachment: fixed;
   color: var(--color-text);
   overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(124, 92, 255, 0.35);
+  color: #ffffff;
 }
 
 *:focus-visible {
@@ -131,7 +152,159 @@ body {
   border-radius: 4px;
 }
 
-/* Respect reduced motion */
+/* ============================================================
+   Global atmosphere
+   ============================================================ */
+
+/* Faint grid texture — stays visually quiet behind content. */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 35%, transparent 100%);
+}
+
+/* ============================================================
+   Motion utilities
+   Only transform/opacity are animated in JS-driven effects.
+   ============================================================ */
+
+/* Page entrance: fade + small rise. */
+.page-enter {
+  animation: rise-in 340ms var(--ease-out-soft) both;
+}
+
+/* Dashboard section stagger — direct children rise in sequence. */
+.stagger > * {
+  opacity: 0;
+  animation: rise-in 380ms var(--ease-out-soft) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 30ms; }
+.stagger > *:nth-child(2) { animation-delay: 80ms; }
+.stagger > *:nth-child(3) { animation-delay: 130ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 230ms; }
+.stagger > *:nth-child(6) { animation-delay: 280ms; }
+.stagger > *:nth-child(7) { animation-delay: 330ms; }
+.stagger > *:nth-child(8) { animation-delay: 380ms; }
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   Card interactions
+   ============================================================ */
+
+.card-hover {
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base),
+    border-color var(--transition-base),
+    background-color var(--transition-base);
+  will-change: transform;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-pop);
+  background-color: var(--color-surface-elevated);
+}
+
+/* ============================================================
+   Spotlight effect (cursor-following radial light)
+   --mx / --my are updated via requestAnimationFrame, never
+   through React state. Pure transform/opacity + CSS vars.
+   ============================================================ */
+
+.spotlight-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.spotlight-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(124, 92, 255, 0.1),
+    transparent 70%
+  );
+}
+
+.spotlight-card:hover .spotlight-overlay {
+  opacity: 1;
+}
+
+/* ============================================================
+   Custom cursor (optional layer, JS-gated)
+   Positions are driven by --cx/--cy (dot) and --rx/--ry (ring)
+   set through requestAnimationFrame. Native cursor is never
+   removed — this layer sits on top with pointer-events overridden.
+   ============================================================ */
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  pointer-events: none;
+  border-radius: 9999px;
+  opacity: 0;
+  will-change: transform;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  background: rgba(124, 92, 255, 0.95);
+  box-shadow: 0 0 8px rgba(124, 92, 255, 0.55);
+  transform: translate3d(calc(var(--cx) * 1px), calc(var(--cy) * 1px), 0)
+    translate(-50%, -50%);
+}
+
+.cursor-ring {
+  width: 34px;
+  height: 34px;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  transform: translate3d(calc(var(--rx) * 1px), calc(var(--ry) * 1px), 0)
+    translate(-50%, -50%);
+  transition:
+    width 180ms ease,
+    height 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease;
+}
+
+.cursor-ring.is-active {
+  width: 52px;
+  height: 52px;
+  border-color: rgba(124, 92, 255, 0.8);
+  background: rgba(124, 92, 255, 0.08);
+}
+
+/* ============================================================
+   Reduced motion — central switch
+   Kills all entrance/stagger/hover motion. JS-driven effects
+   (cursor, magnetic) are additionally gated via matchMedia in
+   useMotionPreferences.
+   ============================================================ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -140,5 +313,19 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .btn:hover,
+  .btn:active {
+    transform: none !important;
+  }
+
+  .card-hover {
+    transition: none;
+  }
+
+  .card-hover:hover {
+    transform: none;
+    box-shadow: var(--shadow-card);
   }
 }

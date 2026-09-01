@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 import type { Session } from '../types'
-import { Card } from './ui/Card'
+import { SpotlightCard } from './effects/SpotlightCard'
 
 interface SessionCardProps {
   session: Session
@@ -26,7 +26,7 @@ export function SessionCard({ session, icon: Icon }: SessionCardProps) {
       to={`/sessions/${session.id}`}
       className="block rounded-lg focus-visible:shadow-ring"
     >
-      <Card className="flex items-center gap-4 p-4 transition-colors duration-200 hover:border-border-strong">
+      <SpotlightCard className="card-hover flex items-center gap-4 p-4">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-accent" aria-hidden="true">
           <Icon className="h-4 w-4" />
         </span>
@@ -45,7 +45,7 @@ export function SessionCard({ session, icon: Icon }: SessionCardProps) {
           <span className="text-sm font-semibold text-text">{session.score}</span>
           <span className="text-xs text-text-faint">{session.durationMinutes} min</span>
         </div>
-      </Card>
+      </SpotlightCard>
     </Link>
   )
 }

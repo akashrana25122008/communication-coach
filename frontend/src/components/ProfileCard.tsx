@@ -1,5 +1,5 @@
 import { Flame } from 'lucide-react'
-import { Card } from './ui/Card'
+import { SpotlightCard } from './effects/SpotlightCard'
 
 interface ProfileCardProps {
   name: string
@@ -10,7 +10,7 @@ interface ProfileCardProps {
 
 export function ProfileCard({ name, streak, strengths, focusAreas }: ProfileCardProps) {
   return (
-    <Card className="flex flex-col gap-5 p-5">
+    <SpotlightCard className="card-hover flex flex-col gap-5 p-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-accent-soft text-lg font-semibold text-accent" aria-hidden="true">
@@ -54,6 +54,6 @@ export function ProfileCard({ name, streak, strengths, focusAreas }: ProfileCard
           </ul>
         </div>
       </div>
-    </Card>
+    </SpotlightCard>
   )
 }

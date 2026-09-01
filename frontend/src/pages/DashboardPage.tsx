@@ -9,6 +9,7 @@ import {
   Target,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Magnetic } from '../components/effects/Magnetic'
 import { PracticeCard } from '../components/PracticeCard'
 import { ProfileCard } from '../components/ProfileCard'
 import { ProgressChart } from '../components/ProgressChart'
@@ -50,7 +51,7 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="flex max-w-6xl flex-col gap-8">
+    <div className="stagger flex max-w-6xl flex-col gap-8">
       {/* Hero / welcome */}
       <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1.5">
@@ -66,12 +67,14 @@ export function DashboardPage() {
             this week.
           </p>
         </div>
-        <Link to="/practice" className="shrink-0">
-          <Button size="lg">
-            Start Practice
-            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </Button>
-        </Link>
+        <Magnetic className="shrink-0">
+          <Link to="/practice" className="block">
+            <Button size="lg">
+              Start Practice
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </Link>
+        </Magnetic>
       </section>
 
       {/* Quick statistics */}

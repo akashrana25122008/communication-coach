@@ -1,7 +1,9 @@
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { ComponentType } from 'react'
 import type { Trend } from '../types'
-import { Card } from './ui/Card'
+import { AnimatedNumber } from './ui/AnimatedNumber'
+import { SpotlightCard } from './effects/SpotlightCard'
 
 interface ScoreCardProps {
   title: string
@@ -29,9 +31,15 @@ export function ScoreCard({
   showProgress = true,
 }: ScoreCardProps) {
   const { icon: TrendIcon, className: trendColor } = trendConfig[trend]
+  const [animated, setAnimated] = useState(false)
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setAnimated(true))
+    return () => cancelAnimationFrame(id)
+  }, [])
 
   return (
-    <Card className="flex flex-col gap-3 p-5">
+    <SpotlightCard className="card-hover flex flex-col gap-3 p-5">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2.5">
           {Icon && (
@@ -51,7 +59,7 @@ export function ScoreCard({
 
       <div className="flex items-baseline justify-between">
         <span className="text-3xl font-semibold tracking-tight text-text">
-          {score}
+          <AnimatedNumber value={score} />
         </span>
         {status && (
           <span className="text-xs font-medium text-text-faint">{status}</span>
@@ -68,11 +76,11 @@ export function ScoreCard({
           aria-label={`${title} score`}
         >
           <div
-            className="h-full rounded-full bg-accent transition-[width] duration-500"
-            style={{ width: `${score}%` }}
+            className="h-full rounded-full bg-accent transition-[width] duration-700 ease-out"
+            style={{ width: `${animated ? score : 0}%` }}
           />
         </div>
       )}
-    </Card>
+    </SpotlightCard>
   )
 }
