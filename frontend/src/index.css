@@ -299,9 +299,83 @@ body {
 }
 
 /* ============================================================
+   AI Coach panel (dashboard)
+   ============================================================ */
+
+.ai-coach-online-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--color-success);
+  box-shadow: 0 0 0 4px rgba(61, 190, 122, 0.18);
+  animation: ai-coach-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes ai-coach-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(61, 190, 122, 0.16), 0 0 8px rgba(61, 190, 122, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(61, 190, 122, 0.04), 0 0 12px rgba(61, 190, 122, 0.55);
+  }
+}
+
+/* Robot entrance: one-time Y-axis 3D flip, then idle float. */
+.ai-coach-robot {
+  transform-style: preserve-3d;
+  perspective: 900px;
+}
+
+.ai-coach-robot:not(.is-reduced) {
+  animation:
+    robot-flip-in 900ms var(--ease-out-soft) both,
+    robot-idle 4.5s ease-in-out 1.1s infinite;
+}
+
+@keyframes robot-flip-in {
+  0% {
+    opacity: 0;
+    transform: rotateY(-85deg) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: rotateY(12deg) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) scale(1);
+  }
+}
+
+@keyframes robot-idle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ============================================================
+   SplashCursor (dashboard only) — liquid trail, velocity-reactive.
+   Canvas is fixed, full-screen, pointer-events:none. Never blocks
+   clicks/selection/scroll/keyboard. GPU-composited via transform.
+   ============================================================ */
+
+.splash-cursor {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ============================================================
    Reduced motion — central switch
-   Kills all entrance/stagger/hover motion. JS-driven effects
-   (cursor, magnetic) are additionally gated via matchMedia in
+   Disable robot flip/idle/splash cursor motion. JS-driven effects
+   (cursor, magnetic, splash) are additionally gated via
    useMotionPreferences.
    ============================================================ */
 
@@ -327,5 +401,13 @@ body {
   .card-hover:hover {
     transform: none;
     box-shadow: var(--shadow-card);
+  }
+
+  .ai-coach-robot:not(.is-reduced) {
+    animation: none;
+  }
+
+  .ai-coach-online-dot {
+    animation: none;
   }
 }

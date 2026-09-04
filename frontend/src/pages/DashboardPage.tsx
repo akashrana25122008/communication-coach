@@ -19,11 +19,11 @@ import { SessionCard } from '../components/SessionCard'
 import { StatCard } from '../components/StatCard'
 import { Button } from '../components/ui/Button'
 import { SectionHeading } from '../components/ui/SectionHeading'
-import { LoadingState } from '../components/ui/states'
+import { EmptyState, LoadingState } from '../components/ui/states'
 import { api } from '../services/api'
 import { practiceTypes } from '../data/demoData'
-import { USER_NAME } from '../data/demoData'
 import { useDemoResource } from '../hooks/useDemoResource'
+import { DashboardAICoach } from '../components/DashboardAICoach'
 
 const metricIcons = {
   clarity: Target,
@@ -50,12 +50,50 @@ export function DashboardPage() {
     return <LoadingState message="Loading your dashboard…" />
   }
 
+  const hasSessions = (sessions.data?.length ?? 0) > 0
+
+  if (!hasSessions && profile.data && (profile.data.strengths.length === 0 || profile.data.focusAreas.length === 0)) {
+    return (
+      <div className="stagger flex max-w-6xl flex-col gap-8">
+        <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-1.5">
+            <p className="text-sm text-text-muted">Good evening, {profile.data?.name ?? 'there'}</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-text sm:text-3xl">
+              Welcome to your communication coach.
+            </h1>
+            <p className="text-sm text-text-muted">
+              Complete a practice session to start building your communication profile.
+            </p>
+          </div>
+          <Magnetic className="shrink-0">
+            <Link to="/practice" className="block">
+              <Button size="lg">
+                Start Practice
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+              </Button>
+            </Link>
+          </Magnetic>
+        </section>
+
+        <EmptyState
+          title="No sessions yet"
+          description="Complete your first practice session to start building your communication profile."
+          action={
+            <Link to="/practice" className="text-sm font-medium text-accent hover:text-accent-strong">
+              Start practicing →
+            </Link>
+          }
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="stagger flex max-w-6xl flex-col gap-8">
       {/* Hero / welcome */}
       <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1.5">
-          <p className="text-sm text-text-muted">Good evening, {USER_NAME}</p>
+          <p className="text-sm text-text-muted">Good evening, {profile.data?.name ?? 'there'}</p>
           <h1 className="text-2xl font-semibold tracking-tight text-text sm:text-3xl">
             Keep your skills sharp today.
           </h1>
@@ -87,24 +125,31 @@ export function DashboardPage() {
         </section>
       )}
 
-      {/* Communication scores */}
+      {/* Communication scores + AI coach */}
       <section aria-label="Communication scores">
-        <SectionHeading title="Communication scores" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {metrics.data?.map((m) => {
-            const Icon = metricIcons[m.id as keyof typeof metricIcons] ?? Target
-            return (
-              <ScoreCard
-                key={m.id}
-                title={m.label}
-                score={m.score}
-                delta={m.delta}
-                trend={m.trend}
-                status={m.description}
-                icon={Icon}
-              />
-            )
-          })}
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          <div className="lg:col-span-3">
+            <SectionHeading title="Communication scores" />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {metrics.data?.map((m) => {
+                const Icon = metricIcons[m.id as keyof typeof metricIcons] ?? Target
+                return (
+                  <ScoreCard
+                    key={m.id}
+                    title={m.label}
+                    score={m.score}
+                    delta={m.delta}
+                    trend={m.trend}
+                    status={m.description}
+                    icon={Icon}
+                  />
+                )
+              })}
+            </div>
+          </div>
+          <div className="lg:col-span-1">
+            <DashboardAICoach />
+          </div>
         </div>
       </section>
 
