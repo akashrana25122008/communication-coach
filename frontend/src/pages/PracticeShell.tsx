@@ -6,6 +6,11 @@ import { Card } from '../components/ui/Card'
 import { PageHeader } from '../components/ui/PageHeader'
 import { practiceApi } from '../services/api'
 import { AudioCaptureController, formatDuration } from '../services/audioCapture'
+import {
+  isSpeechToTextError,
+  speechToTextService,
+} from '../services/speechToText'
+import type { SpeechToTextError, Transcript } from '../services/speechToText'
 import { DIMENSIONS, SCORE_DIMENSION_LABELS } from '../lib/progressEngine'
 import type { PracticeSessionType, SessionScore } from '../types'
 
@@ -22,6 +27,8 @@ type CaptureUiState =
   | 'recording'
   | 'stopping'
   | 'error'
+
+type TranscriptionUiState = 'idle' | 'transcribing' | 'ready' | 'failed'
 
 const DIMENSION_HELP: Record<keyof SessionScore, string> = {
   clarity: 'How clearly your ideas came across',
@@ -48,6 +55,13 @@ export function PracticeShell({ title, type, description, backTo }: PracticeShel
   const [reviewing, setReviewing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [scores, setScores] = useState<SessionScore>(initialScores)
+
+  const [transcriptionState, setTranscriptionState] =
+    useState<TranscriptionUiState>('idle')
+  const [transcript, setTranscript] = useState<Transcript | null>(null)
+  const [transcriptionError, setTranscriptionError] = useState<string | null>(null)
+  // Kept so transcription can be retried without re-recording.
+  const audioBlobRef = useRef<Blob | null>(null)
 
   // Clean up an active recording if the component unmounts mid-capture.
   useEffect(() => {
@@ -83,21 +97,50 @@ export function PracticeShell({ title, type, description, backTo }: PracticeShel
     }
   }, [])
 
+  const transcribeAudio = useCallback(async (blob: Blob) => {
+    setTranscriptionError(null)
+    setTranscript(null)
+    setTranscriptionState('transcribing')
+    try {
+      const result = await speechToTextService.transcribe(blob)
+      setTranscript(result)
+      setTranscriptionState('ready')
+    } catch (err) {
+      setTranscriptionState('failed')
+      if (isSpeechToTextError(err)) {
+        setTranscriptionError((err as SpeechToTextError).message)
+      } else {
+        setTranscriptionError('Transcription is currently unavailable.')
+      }
+    }
+  }, [])
+
   const handleStop = useCallback(async () => {
     if (captureState !== 'recording') return
     setCaptureState('stopping')
     setRecording(false)
     try {
-      await capturerRef.current?.stopRecording()
-      setElapsedMs(capturerRef.current?.getDuration() ?? 0)
+      const result = await capturerRef.current?.stopRecording()
+      setElapsedMs(result?.durationMs ?? capturerRef.current?.getDuration() ?? 0)
       setCaptureState('idle')
-      setReviewing(true)
+      if (result && result.blob) {
+        audioBlobRef.current = result.blob
+        await transcribeAudio(result.blob)
+      } else {
+        // No audio to transcribe — fall back straight to self-rating.
+        setReviewing(true)
+      }
     } catch {
       const err = capturerRef.current?.getError()
       setCaptureState('error')
       setCaptureError(err?.message ?? 'Finishing the recording failed.')
     }
-  }, [captureState])
+  }, [captureState, transcribeAudio])
+
+  const handleRetryTranscription = useCallback(() => {
+    const blob = audioBlobRef.current
+    if (blob) void transcribeAudio(blob)
+  }, [transcribeAudio])
 
   const handleCancel = useCallback(() => {
     capturerRef.current?.cancelRecording()
@@ -105,6 +148,10 @@ export function PracticeShell({ title, type, description, backTo }: PracticeShel
     setElapsedMs(0)
     setRecording(false)
     setCaptureState('idle')
+    audioBlobRef.current = null
+    setTranscriptionState('idle')
+    setTranscript(null)
+    setTranscriptionError(null)
   }, [])
 
   const handleRateManually = useCallback(() => {
@@ -113,6 +160,10 @@ export function PracticeShell({ title, type, description, backTo }: PracticeShel
     setElapsedMs(0)
     setRecording(false)
     setCaptureState('idle')
+    audioBlobRef.current = null
+    setTranscriptionState('idle')
+    setTranscript(null)
+    setTranscriptionError(null)
     setReviewing(true)
   }, [])
 
@@ -159,78 +210,123 @@ export function PracticeShell({ title, type, description, backTo }: PracticeShel
 
       {!reviewing ? (
         <Card className="relative flex flex-col items-center gap-6 overflow-hidden p-8 text-center">
-          <p className="text-sm text-text-muted">
-            Press record, speak your practice round, then stop to review your scores.
-          </p>
-
-          {captureError && (
-            <p className="text-sm text-danger" role="alert">
-              {captureError}
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={() => {
-              if (recording) void handleStop()
-              else if (canRecord) void handleStart()
-            }}
-            disabled={stalling}
-            className={`group relative flex h-16 w-16 items-center justify-center rounded-full transition-colors duration-200 focus-visible:shadow-ring disabled:opacity-60 ${
-              recording
-                ? 'bg-danger-strong text-white'
-                : 'bg-accent text-accent-ink hover:bg-accent-strong'
-            }`}
-            aria-label={
-              recording
-                ? 'Stop recording'
-                : stalling
-                  ? captureState === 'stopping'
-                    ? 'Stopping recording'
-                    : 'Requesting microphone'
-                  : 'Start recording'
-            }
-          >
-            {recording && (
+          {transcriptionState === 'transcribing' ? (
+            <>
+              <p className="text-sm text-text-muted">Transcribing…</p>
               <span
-                className="absolute inset-0 -z-10 animate-ping rounded-full bg-danger/40"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-subtle text-accent"
                 aria-hidden="true"
-              />
-            )}
-            <Mic className="h-6 w-6" />
-          </button>
+              >
+                <Mic className="h-5 w-5 animate-pulse" />
+              </span>
+              <p className="text-sm text-text-faint">
+                Your recorded audio is being converted to text.
+              </p>
+            </>
+          ) : transcriptionState === 'ready' && transcript ? (
+            <>
+              <p className="text-sm text-text-muted">Transcript ready</p>
+              <div className="w-full rounded-lg border border-border bg-surface-subtle p-4 text-left">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-faint">
+                  Transcript
+                </p>
+                <p className="text-sm text-text">{transcript.text}</p>
+              </div>
+              <Button onClick={() => setReviewing(true)}>Continue to review my scores</Button>
+            </>
+          ) : transcriptionState === 'failed' ? (
+            <>
+              <p className="text-sm text-danger" role="alert">
+                {transcriptionError ?? 'Transcription failed.'}
+              </p>
+              <p className="text-sm text-text-faint">
+                Transcription is unavailable right now. You can retry or continue to self-rating.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button variant="secondary" onClick={handleRetryTranscription}>
+                  Retry transcription
+                </Button>
+                <Button variant="secondary" onClick={handleRateManually}>
+                  Rate manually
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-text-muted">
+                Press record, speak your practice round, then stop to review your scores.
+              </p>
 
-          <p className="inline-flex items-center gap-2 text-sm text-text-muted">
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                recording
-                  ? 'animate-pulse bg-danger'
-                  : captureState === 'stopping'
-                    ? 'animate-pulse bg-warning'
-                    : 'bg-accent'
-              }`}
-              aria-hidden="true"
-            />
-            {recording
-              ? `Recording ${formatDuration(elapsedMs)} — click to stop.`
-              : captureState === 'requesting-permission'
-                ? 'Requesting microphone access…'
-                : captureState === 'stopping'
-                  ? 'Finishing recording…'
-                  : captureError
-                    ? 'Recording failed.'
-                    : 'Ready — press to start speaking'}
-          </p>
+              {captureError && (
+                <p className="text-sm text-danger" role="alert">
+                  {captureError}
+                </p>
+              )}
 
-          {captureError && (
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button variant="secondary" onClick={handleStart}>
-                Try again
-              </Button>
-              <Button variant="secondary" onClick={handleRateManually}>
-                Rate manually
-              </Button>
-            </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (recording) void handleStop()
+                  else if (canRecord) void handleStart()
+                }}
+                disabled={stalling}
+                className={`group relative flex h-16 w-16 items-center justify-center rounded-full transition-colors duration-200 focus-visible:shadow-ring disabled:opacity-60 ${
+                  recording
+                    ? 'bg-danger-strong text-white'
+                    : 'bg-accent text-accent-ink hover:bg-accent-strong'
+                }`}
+                aria-label={
+                  recording
+                    ? 'Stop recording'
+                    : stalling
+                      ? captureState === 'stopping'
+                        ? 'Stopping recording'
+                        : 'Requesting microphone'
+                      : 'Start recording'
+                }
+              >
+                {recording && (
+                  <span
+                    className="absolute inset-0 -z-10 animate-ping rounded-full bg-danger/40"
+                    aria-hidden="true"
+                  />
+                )}
+                <Mic className="h-6 w-6" />
+              </button>
+
+              <p className="inline-flex items-center gap-2 text-sm text-text-muted">
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    recording
+                      ? 'animate-pulse bg-danger'
+                      : captureState === 'stopping'
+                        ? 'animate-pulse bg-warning'
+                        : 'bg-accent'
+                  }`}
+                  aria-hidden="true"
+                />
+                {recording
+                  ? `Recording ${formatDuration(elapsedMs)} — click to stop.`
+                  : captureState === 'requesting-permission'
+                    ? 'Requesting microphone access…'
+                    : captureState === 'stopping'
+                      ? 'Finishing recording…'
+                      : captureError
+                        ? 'Recording failed.'
+                        : 'Ready — press to start speaking'}
+              </p>
+
+              {captureError && (
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Button variant="secondary" onClick={handleStart}>
+                    Try again
+                  </Button>
+                  <Button variant="secondary" onClick={handleRateManually}>
+                    Rate manually
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </Card>
       ) : (

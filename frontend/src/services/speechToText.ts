@@ -203,10 +203,13 @@ function extensionFor(type: string): string {
 }
 
 export class HttpSpeechToTextService implements SpeechToTextService {
-  constructor(
-    private readonly endpoint: string = DEFAULT_ENDPOINT,
-    private readonly fetcher: typeof fetch = globalThis.fetch.bind(globalThis),
-  ) {}
+  private readonly endpoint: string
+  private readonly fetcher: typeof fetch
+
+  constructor(endpoint: string = DEFAULT_ENDPOINT, fetcher?: typeof fetch) {
+    this.endpoint = endpoint
+    this.fetcher = fetcher ?? globalThis.fetch.bind(globalThis)
+  }
 
   async transcribe(audio: Blob, options: SpeechToTextOptions = {}): Promise<Transcript> {
     if (!audio) {
